@@ -58,7 +58,7 @@ There are a number of limitations to this dataset that should be noted:
 
 ### Dataset Credits
 
-A big thank you to the breeders who allowed me to use their images for this project. If you are interested in getting a pet rat, please consider supporting these breeders and giving them credit for their work in caring for and sharing these wonderful animals.
+A big thank you to the breeders who allowed me to use their images for this project. If you are interested in getting pet rats, please consider supporting these breeders and giving them credit for their work in caring for and sharing these wonderful animals.
 
 - [Kolohe Iole Rattery](https://koloheiolerattery.com/) - Oahu, Hawaii (ships to other islands)
 - [Little Paws Rattery](https://iowalittlepawsrattery.weebly.com/) - Osceola, Iowa
