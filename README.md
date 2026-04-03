@@ -1,6 +1,6 @@
 # RatClass
 
-RatClass is a small project to analyze which popular image classification models perform best on small datasets. The project is built using PyTorch and primarily focuses on evaluating the performance of various models on a small dataset of rat images.
+RatClass is a small project to analyze which popular image classification models and configurations perform best on small datasets. RatClass tries to classify different visual characteristics of pet rats, such as coat color and other genetic traits, using a dataset of images of fancy rats. The goal is to evaluate how different model architectures, sizes, learning rates, backbone freezing strategies, and augmentation techniques affect performance on a small dataset of around 50-150 images per class.
 
 ## Models Evaluated
 
@@ -41,6 +41,12 @@ The dataset is compiled from images shared by multiple breeders across the Unite
 The data is organized by class first, with most nested folders corresponding to individual rats that have been classified into a larger coat-based category. For example, Mahina, Moana, and Akala are all Martens, and are in the marten class. In addition, each class contains an assortment folder that groups together rats from that class when only 1 or 2 pictures are available for a given individual, avoiding the need to create a separate folder for every sparse example. The dataset is small, with only 50-100 images per class, which makes it a good test case for evaluating model performance on limited data.
 
 The dataset loader in [load_dataset.py](load_dataset.py) uses `torchvision.datasets.ImageFolder`, so each top-level folder in `./dataset` becomes a class label automatically, while the nested folders are scanned recursively for images regardless of whether they correspond to one rat or the class-level assortment folder for sparse examples.
+
+### Note on Class Labels
+
+The class labels given to the model are based on visible coat characteristics, such as color and variations. These characteristics are often determined by specific genetic traits, but those traits are not necessarily mutually exclusive to the other traits. For example, a rat can simultaneously be a marten and a black, but the model is only given the marten label, since the marten coat pattern is more visually distinctive than the black coat color. This means that the model is not necessarily learning to identify specific genetic traits, but rather learning to classify based on visual characteristics that may be influenced by multiple underlying traits.
+
+This project is not intended to perfectly classify all the different traits of a rat, but rather to evaluate how different model architectures and configurations perform on a small dataset with visually distinctive classes. However, future work may involve exploring multi-label classification to allow the model to learn to identify multiple traits simultaneously, which could potentially provide more insights into the underlying genetics of coat patterns in rats.
 
 ### Dataset Limitations
 
