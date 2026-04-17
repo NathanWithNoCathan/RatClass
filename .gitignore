@@ -1,5 +1,4 @@
 /.venv
 /generate_augmentation_figure.py
 /models
-/writeup
 /__pycache__
