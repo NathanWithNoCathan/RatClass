@@ -309,7 +309,6 @@ def summarize_dataset(dataset: ImageFolder) -> dict[str, int]:
 		for class_name, class_index in dataset.class_to_idx.items()
 	}
 
-
 if __name__ == "__main__":
 	# Simple test to verify that the dataset loads correctly and prints a summary of the classes and image counts.
 	rat_dataset = load_dataset()

@@ -68,8 +68,8 @@ class BackboneFreezeConfig:
 MODEL_CONFIGS = [
 	ModelConfig("resnet", "small", "resnet18", resnet18, ResNet18_Weights.DEFAULT),
 	ModelConfig("resnet", "medium", "resnet34", resnet34, ResNet34_Weights.DEFAULT),
-	ModelConfig("mobilenet", "small", "mobilenet_v2", mobilenet_v2, MobileNet_V2_Weights.DEFAULT),
-	ModelConfig("mobilenet", "medium", "mobilenet_v3_small", mobilenet_v3_small, MobileNet_V3_Small_Weights.DEFAULT),
+	ModelConfig("mobilenet", "small", "mobilenet_v3_small", mobilenet_v3_small, MobileNet_V3_Small_Weights.DEFAULT),
+	ModelConfig("mobilenet", "medium", "mobilenet_v2", mobilenet_v2, MobileNet_V2_Weights.DEFAULT),
 	ModelConfig("efficientnet", "small", "efficientnet_b0", efficientnet_b0, EfficientNet_B0_Weights.DEFAULT),
 	ModelConfig("efficientnet", "medium", "efficientnet_b2", efficientnet_b2, EfficientNet_B2_Weights.DEFAULT),
 	ModelConfig("densenet", "small", "densenet121", densenet121, DenseNet121_Weights.DEFAULT),
@@ -79,9 +79,9 @@ MODEL_CONFIGS = [
 LEARNING_RATES = [1e-4, 3e-3]
 BATCH_SIZE = 16
 MODEL_OUTPUT_DIR = Path("./models")
-TRAIN_RATIO = 0.5
+TRAIN_RATIO = 0.6
 VALIDATION_RATIO = 0.15
-TEST_RATIO = 0.35
+TEST_RATIO = 0.25
 SPLIT_SEED = 42
 BACKBONE_FREEZE_CONFIGS = [
 	BackboneFreezeConfig("freeze-5", 5),
