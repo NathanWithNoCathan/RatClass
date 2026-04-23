@@ -67,7 +67,7 @@ Without transfer learning, training a deep network from scratch on a small datas
 \subsubsection{Data Augmentation}
 Data augmentation is a technique used to artificially increase the effective size of a training dataset by applying label-preserving transformations to existing data. This can help improve model performance by providing more variation during training and reducing overfitting. In small datasets, a model may otherwise learn to associate specific poses, orientations, environments, or lighting conditions with the class labels, which can lead to poor generalization. Applying transformations such as random cropping, flipping, rotating, and color jittering can help the model learn more robust features that are less tied to those incidental conditions.
 
-Beyond these basic transformations, more advanced augmentation strategies such as random erasing and composition-based methods (e.g., combining multiple images within a single training example) can further regularize training, although we will not fully explore these techniques in this work \cite{shorten2019augmentation}.
+Beyond these basic transformations, more advanced augmentation strategies such as random erasing \cite{zhong2017randomerasing} and composition-based methods such as CutMix \cite{yun2019cutmix} can further regularize training, although we will not fully explore these techniques in this work \cite{shorten2019augmentation}.
 
 \begin{figure}
     \centering
@@ -119,11 +119,20 @@ In order to determine the class labels for our dataset, we chose our own hierarc
 
 \begin{enumerate}
     \item Double Rex/Hairless: If the rat has a double rex coat OR it is hairless, it is classified as a Double Rex/Hairless. Although these are not necessarily the same trait, they are grouped together for classification purposes. They are both characterized by partial or complete absence of fur. This trait is relatively easy to identify and classify based on visual characteristics, making it a clear choice for the first level of our classification hierarchy.
-    \item Marten: If the rat has a marten coat, it is classified as a Marten. This is characterized by dark coloration on the extremities (face, feet, tail) which fades into a lighter color on the body. This trait is relatively easy to identify and classify based on visual characteristics, making it a clear choice for the second level of our classification hierarchy. It is noteworthy that Martens more often have red eyes than other classes, which could be a confounding factor for classification.
+    \item Marten: If the rat has a marten coat, it is classified as a Marten. This is characterized by dark coloration on the extremities (face, feet, tail) which fades into a lighter color on the body. The most distinctive feature is the smooth gradient from dark to light. This trait is relatively easy to identify and classify based on visual characteristics, making it a clear choice for the second level of our classification hierarchy. It is noteworthy that Martens more often have red eyes than other classes, which could be a confounding factor for classification.
     \item Blue: If the rat has a blue coat, it is classified as a Blue. Despite their name, they are often characterized by a partial or complete dark-gray coat, rarely with a bluish tint. This trait is relatively easy to identify and classify based on visual characteristics, making it a clear choice for the third level of our classification hierarchy. However, it is noteworthy that Blues can overlap with Agoutis, in which case the Blue trait takes precedence in our hierarchy.
     \item Agouti: If the rat has an agouti coat and no other higher precedence traits (as defined above), it is classified as an Agouti. This is characterized by multiple hair bands of different colors on each individual hair, which creates a "wild-type" coat color that is often brown or gray with a speckled appearance. This trait, although visually distinct, can be more difficult to identify and classify than the other traits due to its variability and potential overlap with other classes (e.g., a rat could be both an Agouti and a Blue). Therefore, it is placed lower in the classification hierarchy than the more visually distinct traits.
     \item Black: If the rat has a black coat and no other higher precedence traits (as defined above), it is classified as a Black. This is characterized by a solid black coat color on parts of or the entire body. This trait is relatively easy to identify, however it is placed last in the classification hierarchy because it is the least visually informative trait. For example, a rat could be both a Black and a Marten, but the Marten trait would take precedence in our hierarchy because it provides more specific information about the coat pattern and coloration than the Black trait alone.
 \end{enumerate}
+
+Refer to figure \ref{fig:class_examples} for example images from each of the five classes in our dataset.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\linewidth]{example_class_images.png}
+    \caption{Example images from each of the five classes in our dataset. Thanks to Little Paws Rattery and Kolohe 'Iole Rattery for allowing us to use these images.}
+    \label{fig:class_examples}
+\end{figure}
 
 \subsubsection{Dataset Splitting}
 
@@ -141,7 +150,7 @@ To investigate object classification with small datasets, we designed a controll
 
 Our sweep evaluates four convolutional-network families: ResNet, MobileNet, EfficientNet, and DenseNet \cite{he2016resnet, howard2017mobilenets, tan2019efficientnet}. For each family, we test a smaller and a medium-sized variant, giving eight architectures in total. Each architecture is trained with two learning rates ($10^{-4}$ and $3 \times 10^{-3}$), two freezing schedules for the pre-trained backbone (freeze for the first 5 epochs or the first 15 epochs), and six augmentation pipelines ranging from minimal resizing and center cropping to strong geometric and color augmentation with random erasing \cite{shorten2019augmentation}. This yields 192 experiment configurations overall.
 
-Across all runs, the batch size is fixed at 16. Training uses AdamW with weight decay of $10^{-4}$, a cosine-annealing learning-rate schedule, a maximum of 40 epochs, and early stopping after 10 epochs without improvement in validation loss. During the frozen-backbone phase, only the classifier head is updated; once the freeze period ends, the full network is fine-tuned. For each run, the best checkpoint is selected according to validation loss, and that trained model is then evaluated on both the validation and test splits.
+Across all runs, the batch size is fixed at 16. Training uses AdamW \cite{loshchilov2019adamw} with weight decay of $10^{-4}$, a cosine-annealing learning-rate schedule \cite{loshchilov2017sgdr}, a maximum of 40 epochs, and early stopping after 10 epochs without improvement in validation loss. During the frozen-backbone phase, only the classifier head is updated; once the freeze period ends, the full network is fine-tuned. For each run, the best checkpoint is selected according to validation loss, and that trained model is then evaluated on both the validation and test splits.
 
 
 
