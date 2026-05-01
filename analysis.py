@@ -336,18 +336,20 @@ def make_overall_per_class_precision_recall_chart(
 	bar_width = 0.35
 
 	figure, axis = plt.subplots(figsize=figure_size)
-	axis.bar(
+	precision_bars = axis.bar(
 		[position - bar_width / 2 for position in positions],
 		precision_values,
 		width=bar_width,
 		label="Mean precision",
 	)
-	axis.bar(
+	recall_bars = axis.bar(
 		[position + bar_width / 2 for position in positions],
 		recall_values,
 		width=bar_width,
 		label="Mean recall",
 	)
+	annotate_bar_values(axis, precision_bars, "P")
+	annotate_bar_values(axis, recall_bars, "R")
 	axis.set_xticks(positions)
 	axis.set_xticklabels(class_names, rotation=45, ha="right")
 	axis.set_ylim(0, 1)
@@ -397,6 +399,31 @@ def assign_augmentation_bucket(
 	return None
 
 
+def format_metric_annotation(metric_label: str, metric_value: Any) -> str | None:
+	"""Format a compact metric label for chart annotations."""
+	if not isinstance(metric_value, (int, float)):
+		return None
+	return f"{metric_label}: {metric_value:.2f}"
+
+
+def annotate_bar_values(axis, bars, metric_label: str, vertical_offset: float = 0.015) -> None:
+	"""Annotate each bar with a compact metric label rounded to two decimals."""
+	for bar in bars:
+		value = bar.get_height()
+		annotation = format_metric_annotation(metric_label, value)
+		if annotation is None:
+			continue
+		axis.text(
+			bar.get_x() + bar.get_width() / 2,
+			min(value + vertical_offset, 0.995),
+			annotation,
+			ha="center",
+			va="bottom",
+			fontsize=8,
+			rotation=90,
+		)
+
+
 def plot_grouped_metric_bars(
 	axis,
 	summaries: Iterable[dict[str, Any]],
@@ -419,7 +446,10 @@ def plot_grouped_metric_bars(
 	for index, (metric_key, metric_label) in enumerate(zip(metric_keys, metric_labels)):
 		values = [summary.get(metric_key) or 0.0 for summary in summaries]
 		offsets = [position + offset_start + index * bar_width for position in positions]
-		axis.bar(offsets, values, width=bar_width, label=metric_label)
+		bars = axis.bar(offsets, values, width=bar_width, label=metric_label)
+		if rank_metric_key is None:
+			annotation_label = metric_label.split()[-1][0].upper() if metric_label else "M"
+			annotate_bar_values(axis, bars, annotation_label)
 
 	if rank_metric_key is not None and summaries:
 		ranked_indices = sorted(
@@ -433,11 +463,19 @@ def plot_grouped_metric_bars(
 			rank_metric_value = summaries[index].get(rank_metric_key)
 			if not isinstance(rank_metric_value, (int, float)):
 				continue
-			label_height = min(rank_metric_value + 0.03, 0.98)
+			label_lines = [f"#{rank_value}"]
+			for metric_text in (
+				format_metric_annotation("P", summaries[index].get("test_macro_precision_mean")),
+				format_metric_annotation("R", summaries[index].get("test_macro_recall_mean")),
+				format_metric_annotation("A", summaries[index].get("test_overall_accuracy_mean")),
+			):
+				if metric_text is not None:
+					label_lines.append(metric_text)
+			label_height = min(rank_metric_value + 0.1, 0.98)
 			axis.text(
 				position,
 				label_height,
-				f"#{rank_value}",
+				"\n".join(label_lines),
 				ha="center",
 				va="bottom",
 				fontsize=8,
@@ -509,17 +547,25 @@ def make_macro_metrics_with_parameter_count_chart(
 
 	for index, position in enumerate(positions):
 		accuracy_value = summaries[index].get("test_overall_accuracy_mean")
+		precision_value = summaries[index].get("test_macro_precision_mean")
+		recall_value = summaries[index].get("test_macro_recall_mean")
 		parameter_count = summaries[index].get("parameter_count")
 		if not isinstance(accuracy_value, (int, float)):
 			continue
 		parameter_text = format_parameter_count_label(parameter_count)
+		label_lines = [f"#{accuracy_ranks_by_index[index]}"]
+		for metric_text in (
+			format_metric_annotation("P", precision_value),
+			format_metric_annotation("R", recall_value),
+			format_metric_annotation("A", accuracy_value),
+		):
+			if metric_text is not None:
+				label_lines.append(metric_text)
+		label_lines.append(f"params #{parameter_ranks_by_index[index]} ({parameter_text})")
 		axis.text(
 			position,
-			min(accuracy_value + 0.08, 0.99),
-			(
-				f"acc #{accuracy_ranks_by_index[index]}\n"
-				f"params #{parameter_ranks_by_index[index]} ({parameter_text})"
-			),
+			min(accuracy_value + 0.12, 0.99),
+			"\n".join(label_lines),
 			ha="center",
 			va="bottom",
 			fontsize=8,
@@ -722,6 +768,30 @@ def plot_ranked_metric_panel(axis, rows: Iterable[dict[str, Any]], title: str) -
 	axis.set_title(title)
 	axis.invert_yaxis()
 
+	for position, accuracy_value, precision_value, recall_value in zip(
+		positions,
+		accuracy_values,
+		precision_values,
+		recall_values,
+	):
+		label_text = " | ".join(
+			metric_text
+			for metric_text in (
+				format_metric_annotation("P", precision_value),
+				format_metric_annotation("R", recall_value),
+				format_metric_annotation("A", accuracy_value),
+			)
+			if metric_text is not None
+		)
+		axis.text(
+			min(max(accuracy_value, precision_value, recall_value) + 0.02, 0.98),
+			position,
+			label_text,
+			ha="left",
+			va="center",
+			fontsize=8,
+		)
+
 
 def make_best_and_worst_runs_chart(
 	rows: Iterable[dict[str, Any]],
@@ -779,7 +849,7 @@ def make_metric_bar_chart(
 	values = [row[metric] for row in sorted_rows]
 
 	figure, axis = plt.subplots(figsize=figure_size)
-	axis.bar(labels, values)
+	bars = axis.bar(labels, values)
 	if metric == "test_overall_accuracy":
 		ranked_indices = sorted(
 			range(len(sorted_rows)),
@@ -792,13 +862,15 @@ def make_metric_bar_chart(
 				continue
 			axis.text(
 				index,
-				min(value + 0.03, 0.98),
-				f"#{ranks_by_index[index]}",
+				min(value + 0.08, 0.98),
+				f"#{ranks_by_index[index]}\nA: {value:.2f}",
 				ha="center",
 				va="bottom",
 				fontsize=8,
 				fontweight="bold",
 			)
+	else:
+		annotate_bar_values(axis, bars, "A")
 	axis.set_title(f"Top {len(sorted_rows)} runs by {metric}")
 	axis.set_ylabel(metric)
 	axis.tick_params(axis="x", rotation=45)
@@ -824,18 +896,20 @@ def make_precision_recall_per_class_chart(
 	bar_width = 0.4
 
 	figure, axis = plt.subplots(figsize=figure_size)
-	axis.bar(
+	precision_bars = axis.bar(
 		[position - bar_width / 2 for position in positions],
 		precision_values,
 		width=bar_width,
 		label="Precision",
 	)
-	axis.bar(
+	recall_bars = axis.bar(
 		[position + bar_width / 2 for position in positions],
 		recall_values,
 		width=bar_width,
 		label="Recall",
 	)
+	annotate_bar_values(axis, precision_bars, "P")
+	annotate_bar_values(axis, recall_bars, "R")
 	axis.set_xticks(positions)
 	axis.set_xticklabels(class_names, rotation=45, ha="right")
 	axis.set_ylim(0, 1)
