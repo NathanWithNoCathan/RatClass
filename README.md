@@ -80,3 +80,18 @@ pip install torch torchvision opencv-python matplotlib
 ```
 
 I used Python 3.12 for this project, but it may work with other versions as well.
+
+## Usage
+
+The training script is in [train_models.py](train_models.py). You can run it with the following command:
+
+```bash
+python train_models.py
+```
+
+Most of the analysis is done in the two scripts [analysis.py](analysis.py), and the blue misclassifications are in [analyze_blue_misclassifications.py](analyze_blue_misclassifications.py). You can run them with the following commands:
+
+```bash
+python analysis.py
+python analyze_blue_misclassifications.py
+```
